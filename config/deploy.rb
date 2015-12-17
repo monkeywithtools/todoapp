@@ -1,8 +1,8 @@
 require 'bundler/capistrano'
 
-set :application, "todoapp"
-set :repository,  "https://github.com/monkeywithtools/todoapp.git"
-set :deploy_to, "/var/www/example.com"
+set :application, "Your App's Name"
+set :repository,  "git@github.com:monkeywithtools/todoapp.git"
+set :deploy_to, "/var/www/todoapp"
 set :scm, :git
 set :branch, "master"
 set :user, "stonewall"
@@ -10,21 +10,10 @@ set :group, "deployers"
 set :use_sudo, false
 set :rails_env, "production"
 set :deploy_via, :copy
-set :ssh_options, { :forward_agent => true }
+set :ssh_options, { :forward_agent => true, :port => 22 }
 set :keep_releases, 5
 default_run_options[:pty] = true
-set :copy_dir, "/home/stonewall/tmp"
-set :remote_copy_dir, "/tmp"
-
-role :web, 'localhost'
-role :app, 'localhost'
-role :db, 'localhost'
-
-set :deploy_to, '/var/www/example.com'
-
-task :restart, :roles => [:web, :app, :db] do
-    run "#{deploy_to}/current/config/restart.sh"
-end
+server "cerebro", :app, :web, :db, :primary => true
 
 namespace :deploy do
   task :start do ; end
@@ -45,12 +34,9 @@ namespace :deploy do
   end
 
   desc "Restart applicaiton"
-  task :restart, :roles => [:web, :app, :db] do
-    run "#{deploy_to}/current/config/restart.sh"
+  task :restart do
+    run "#{ try_sudo } touch #{ File.join(current_path, 'tmp', 'restart.txt') }"
   end
-  # task :restart do
-  #   run "#{ try_sudo } touch #{ File.join(current_path, 'tmp', 'restart.txt') }"
-  # end
 end
 
 after "deploy", "deploy:symlink_config_files"
